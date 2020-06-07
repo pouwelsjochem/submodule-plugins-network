@@ -82,10 +82,6 @@ checkError
 # "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/facebook/facebook"
 # checkError
 
-# Uncomment if using SuperRewards
-# "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/SuperRewards"
-# checkError
-
 # Include shared Lua code as a Java string
 # escape backslashes, escape double quotes, wrap lines in double quotes and add a plus sign
 sed -e 's/lib\./network./g' -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/.*/"&\\n" + /' -e '$s/$/"\\n";/' <../shared/network.lua >/tmp/tmpfile1.txt
