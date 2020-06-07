@@ -82,10 +82,6 @@ checkError
 # "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/facebook/facebook"
 # checkError
 
-# Uncomment if using OpenFeint
-# "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/OpenFeint/OpenFeintAPI"
-# checkError
-
 # Uncomment if using SuperRewards
 # "$SDK_PATH/tools/android" update lib-project -p "$CORONA_PATH/Corona/android/lib/SuperRewards"
 # checkError
