@@ -1940,20 +1940,13 @@ public class NetworkRequest implements com.naef.jnlua.NamedJavaFunction
 						message = "";
 					}
 				}
-				boolean bReportError = true;
+
 				if (this.requestParameters != null)
 				{
 					if (this.requestParameters.requestURL != null)
 					{
 						String urlRequest = this.requestParameters.requestURL.toString();
-						if (urlRequest.startsWith("https://stats.coronalabs.com") ||
-							urlRequest.startsWith("https://monetize-api.coronalabs.com") ||
-							urlRequest.startsWith("https://api.intercom.io"))
-						{
-							// Don't report errors for our own analytics
-							bReportError = false;
-						}
-						else if (message.startsWith(urlRequest))
+						if (message.startsWith(urlRequest))
 						{
 							// If we get an error message that just consists of the URL, elaborate
 							message = "Invalid URL: " + message;
@@ -1964,10 +1957,7 @@ public class NetworkRequest implements com.naef.jnlua.NamedJavaFunction
 						}
 					}
 				}
-				if (bReportError)
-				{
-					error(message + " (" + e.getClass().getCanonicalName() + ")");
-				}
+				error(message + " (" + e.getClass().getCanonicalName() + ")");
 
 				debug("Exception during request: %s", message);
 				this.requestState.isError = true;
