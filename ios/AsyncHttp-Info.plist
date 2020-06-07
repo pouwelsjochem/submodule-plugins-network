@@ -32,8 +32,6 @@
 	<string>MainWindow-iPad</string>
 	<key>UIPrerenderedIcon</key>
 	<true/>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleBlackTranslucent</string>
 	<key>UIApplicationExitsOnSuspend</key>
 	<true/>
 	<key>UIRequiredDeviceCapabilities</key>
