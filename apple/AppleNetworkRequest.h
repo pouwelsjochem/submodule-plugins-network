@@ -34,7 +34,6 @@
 -(void)invalidate;
 -(void)cancel;
 -(void)end;
--(bool)reportErrors;
 
 @end
 

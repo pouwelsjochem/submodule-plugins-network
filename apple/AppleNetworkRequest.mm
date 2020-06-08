@@ -14,29 +14,6 @@
 #import "AppleNetworkSupport.h"
 
 // ----------------------------------------------------------------------------
-// System Versioning Preprocessor Macros
-//
-
-#if TARGET_OS_IPHONE
-	#import <UIKit/UIDevice.h>
-
-	#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
-	#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
-	#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
-	#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
-	#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
-#endif
-
-// ----------------------------------------------------------------------------
-
-// Workaround for Apple Radar: 10412199
-// See also:
-// http://stackoverflow.com/questions/2736967/nsmutableurlrequest-not-obeying-my-timeoutinterval
-// https://devforums.apple.com/message/108292#108292
-//
-// The timeout property in CoronaURLRequest and the timeout-related methods in CoronaURLConnection
-// are used to implement this workaround.  Note that the bug is fixed in iOS 6.0.
-//
 
 @interface CoronaURLRequest ()
 
@@ -217,8 +194,6 @@
 
 // ----------------------------------------------------------------------------
 
-#if TARGET_OS_IPHONE
-
 // Workaround for Apple Radar: 10412199
 // See also:
 // http://stackoverflow.com/questions/2736967/nsmutableurlrequest-not-obeying-my-timeoutinterval
@@ -226,89 +201,6 @@
 //
 // setTimeoutForRequest / didTimeout / cancelTimeout are only needed for the workaround.
 //
-
-// Workaround for Apple Radar: 10412199
-- (void)setTimeoutForRequest:(NSURLRequest*)request delegate:(id)delegate
-{
-	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-	{
-		NSLog(@"setTimeoutForRequest should not be called on iOS 6.0 or greater");
-		return;
-	}
-	
-	// On iOS, the timeout is not honored (i.e. it's always 240 sec)
-	// when the request has a body
-	if ( [request HTTPBody] )
-	{
-		NSTimeInterval timeout = [(CoronaURLRequest*)request timeout];
-		if ( timeout > 0 )
-		{
-			[self performSelector:@selector(didTimeout:) withObject:delegate afterDelay:timeout];
-		}
-	}
-}
-
-// Workaround for Apple Radar: 10412199
-- (void)didTimeout:(id)delegate
-{
-	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-	{
-		NSLog(@"didTimeout should not be called on iOS 6.0 or greater");
-		return;
-	}
-
-	bool bReportError = [self reportErrors];
-	if (bReportError)
-	{
-		if (fRequestParameters)
-		{
-			NSString *urlRequest = fRequestParameters.fRequestURL;
-			NSString *msg = [NSString stringWithFormat:@"Connection timeout: %@", urlRequest];
-			NSLog(@"%@",msg);
-		}
-	}
-
-	//didFailWithError calls [connection end] which calls [self release]
-	//This change was added to cancel at the NSURLConnection level only
-	//and lets the didFailWithError routine call end/release
-	[super cancel];
-
-	NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:[NSDictionary dictionaryWithObject:@"The request timed out." forKey:NSLocalizedDescriptionKey]];
-	[delegate connection:self didFailWithError:error];
-}
-
-// Workaround for Apple Radar: 10412199
-- (void)cancelTimeout
-{
-	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-	{
-		NSLog(@"cancelTimeout should not be called on iOS 6.0 or greater");
-		return;
-	}
-
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(didTimeout:) object:fDelegate];
-}
-
-#endif // TARGET_OS_IPHONE
-
-- (bool)reportErrors
-{
-	bool result = true;
-	if (fRequestParameters)
-	{
-		NSString *urlRequest = fRequestParameters.fRequestURL;
-		if ([urlRequest rangeOfString:@"stats.coronalabs.com"].length > 0 || // contains
-		    [urlRequest hasPrefix:@"https://api.intercom.io"]  ||
-		    [urlRequest hasPrefix:@"https://monetize-api.coronalabs.com"]  ||
-			[urlRequest rangeOfString:@"coronalabs.com/links/homescreen/manualfeed.json"].length > 0 ||
-			[urlRequest rangeOfString:@"coronalabs.com/links/homescreen/feed.json"].length > 0)
-		{
-			result = false;
-		}
-	}
-	return result;
-}
-
 
 // ----------------------------------------------------------------------------
 
@@ -332,15 +224,6 @@
 
 		fData = [[NSMutableData alloc] initWithCapacity:0];
 		fResponse = nil;
-		
-#if TARGET_OS_IPHONE
-		if (SYSTEM_VERSION_LESS_THAN(@"6.0"))
-		{
-			// Workaround for Apple Radar: 10412199
-			self.fDelegate = delegate;
-			[self setTimeoutForRequest:request delegate:delegate];
-		}
-#endif // TARGET_OS_IPHONE
 
 		if ( Upload == fRequestParameters.fProgressDirection )
 		{
@@ -385,14 +268,6 @@
 	// connection to prevent them from trying to reference it later...
 	//
 	fNetworkRequestState.fRequestCanceller.fConnection = nil;
-
-#if TARGET_OS_IPHONE
-	if (SYSTEM_VERSION_LESS_THAN(@"6.0"))
-	{
-		// Workaround for Apple Radar: 10412199
-		[self cancelTimeout];
-	}
-#endif // TARGET_OS_IPHONE
 
     self.fRequestParameters = nil;
     self.fConnectionManager = nil;
@@ -463,14 +338,6 @@
 		connection.fNetworkRequestState.fPhase = @"began";
 		[connection.fRequestParameters.fLuaCallback callWithNetworkRequestState: connection.fNetworkRequestState];
 	}
-
-#if TARGET_OS_IPHONE
-	if (SYSTEM_VERSION_LESS_THAN(@"6.0"))
-	{
-		// Workaround for Apple Radar: 10412199
-		[connection cancelTimeout];
-	}
-#endif // TARGET_OS_IPHONE
 
 	// Per Apple, this can be called multiple times, for example in the case of a redirect, so each time
 	// we reset the data.  (Note than in practice, using both direct and relative redirects, this does not
@@ -676,14 +543,6 @@
 
 - (void)connection:(CoronaURLConnection *)connection didFailWithError:(NSError *)theError
 {
-#if TARGET_OS_IPHONE
-	if (SYSTEM_VERSION_LESS_THAN(@"6.0"))
-	{
-		// Workaround for Apple Radar: 10412199
-		[connection cancelTimeout];
-	}
-#endif // TARGET_OS_IPHONE
-
 	if ( connection.fTempFile )
 	{
 		// Delete the temp file
@@ -697,19 +556,8 @@
 	}
 	
 	NSString *errorMessage = [theError localizedDescription];
-	
-	
-	bool bReportError = true;
-	if (connection)
-	{
-		bReportError = [connection reportErrors];
-	}
-	
-	if (bReportError)
-	{
-		error(@"network request failed: %@ [%d: %@]",
+	error(@"network request failed: %@ [%d: %@]",
 				connection.fRequestParameters.fRequestURL, theError.code, errorMessage);
-	}
 	
 	[connection.fNetworkRequestState setDebugValue: errorMessage forKey: @"errorMessage"];
 
