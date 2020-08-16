@@ -190,20 +190,6 @@
 @synthesize fTempFile;
 @synthesize fData;
 
-@synthesize fDelegate; // TODO: Remove when iOS workaround for Radar 10412199 is removed
-
-// ----------------------------------------------------------------------------
-
-// Workaround for Apple Radar: 10412199
-// See also:
-// http://stackoverflow.com/questions/2736967/nsmutableurlrequest-not-obeying-my-timeoutinterval
-// https://devforums.apple.com/message/108292#108292
-//
-// setTimeoutForRequest / didTimeout / cancelTimeout are only needed for the workaround.
-//
-
-// ----------------------------------------------------------------------------
-
 -(id)initWithRequest:(CoronaURLRequest *)request networkRequestParameters:(NetworkRequestParameters*)requestParams connectionManager:(ConnectionManager *)connectionManager;
 {
 	CoronaConnectionDelegate* delegate = [[CoronaConnectionDelegate alloc] init];
