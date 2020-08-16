@@ -10,7 +10,6 @@
 		A4144669185FE739006F579E /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4144668185FE739006F579E /* CoreVideo.framework */; };
 		A414466A185FE746006F579E /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A484112315114F700074BD57 /* GLKit.framework */; };
 		A42BD5511686C84200DC652D /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A42BD54E1686C84200DC652D /* Accounts.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		A42BD5521686C84200DC652D /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A42BD54F1686C84200DC652D /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A42BD5531686C84200DC652D /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A42BD5501686C84200DC652D /* Social.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		A42BD55E1686C89900DC652D /* FacebookSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A42BD55D1686C89900DC652D /* FacebookSDK.framework */; };
 		A447B610165D72FB009EA762 /* AppCoronaDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = A447B60F165D72FB009EA762 /* AppCoronaDelegate.mm */; };
@@ -78,7 +77,6 @@
 /* Begin PBXFileReference section */
 		A4144668185FE739006F579E /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		A42BD54E1686C84200DC652D /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
-		A42BD54F1686C84200DC652D /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		A42BD5501686C84200DC652D /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		A42BD55D1686C89900DC652D /* FacebookSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FacebookSDK.framework; path = "CoronaEnterprise/Plugins/sdk-facebook/ios/FacebookSDK.framework"; sourceTree = "<group>"; };
 		A447B60E165D72FB009EA762 /* AppCoronaDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppCoronaDelegate.h; sourceTree = SOURCE_ROOT; usesTabs = 1; };
@@ -140,7 +138,6 @@
 				A414466A185FE746006F579E /* GLKit.framework in Frameworks */,
 				A4144669185FE739006F579E /* CoreVideo.framework in Frameworks */,
 				A42BD5511686C84200DC652D /* Accounts.framework in Frameworks */,
-				A42BD5521686C84200DC652D /* AdSupport.framework in Frameworks */,
 				A42BD5531686C84200DC652D /* Social.framework in Frameworks */,
 				A484117715128D5D0074BD57 /* AddressBook.framework in Frameworks */,
 				A484117815128D5D0074BD57 /* AddressBookUI.framework in Frameworks */,
@@ -233,7 +230,6 @@
 				A4144668185FE739006F579E /* CoreVideo.framework */,
 				A42BD55D1686C89900DC652D /* FacebookSDK.framework */,
 				A42BD54E1686C84200DC652D /* Accounts.framework */,
-				A42BD54F1686C84200DC652D /* AdSupport.framework */,
 				A42BD5501686C84200DC652D /* Social.framework */,
 				A484116315128D5C0074BD57 /* AddressBook.framework */,
 				A484116415128D5C0074BD57 /* AddressBookUI.framework */,
