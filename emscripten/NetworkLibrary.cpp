@@ -61,7 +61,7 @@ extern "C"
 				requestState.fResponseBody.bodyFile = new CoronaFileSpec(responseFile);
 				UTF8String responseFileFullPath = responseFile->getFullPath();
 
-				FILE* f = fopen(responseFileFullPath.c_str(), "wb");
+				::FILE* f = ::fopen(responseFileFullPath.c_str(), "wb");
 				if (f)
 				{
 					fwrite(body, 1, bodylen, f); 
