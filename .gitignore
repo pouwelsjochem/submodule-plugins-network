@@ -51,3 +51,5 @@ android/gen/*
 android/assets/*
 android/local.properties
 android/src/network/LuaHelper.java
+Corona/network.dylib
+*xcuser*

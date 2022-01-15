@@ -1338,7 +1338,7 @@ public class NetworkRequest implements com.naef.jnlua.NamedJavaFunction
 
 					// Write the request body
 					//
-					if (this.requestParameters.method.equals("POST") || this.requestParameters.method.equals("PUT"))
+					if (this.requestParameters.method.equals("POST") || this.requestParameters.method.equals("PUT") || this.requestParameters.method.equals("PATCH"))
 					{
 						if ( ( null != this.requestParameters.requestBody ) && ( ! wasCtHeaderSpecified ))
 						{
