@@ -307,7 +307,12 @@ public class NetworkRequest implements com.naef.jnlua.NamedJavaFunction
 		{
 			InputStream is = null;
 
-			if ( ! this.isResourceFile )
+			if ( this.fullPath.startsWith("content://"))
+			{
+				Context context = CoronaEnvironment.getApplicationContext();
+				is = context.getContentResolver().openInputStream(android.net.Uri.parse(this.fullPath));
+			}
+			else if ( ! this.isResourceFile )
 			{
 				is = new FileInputStream( this.fullPath );
 			}
