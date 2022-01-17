@@ -106,7 +106,8 @@
 		// We're only going to set the request body on PUT/POST (you get a "request body stream exhausted" hissyfit otherwise).
 		//
 		if (( [@"PUT" caseInsensitiveCompare:requestParams.fMethod] == NSOrderedSame ) ||
-			( [@"POST" caseInsensitiveCompare:requestParams.fMethod] == NSOrderedSame ))
+			( [@"POST" caseInsensitiveCompare:requestParams.fMethod] == NSOrderedSame ) ||
+			( [@"PATCH" caseInsensitiveCompare:requestParams.fMethod] == NSOrderedSame ))
 		{
 			if ( requestParams.fRequestBody )
 			{

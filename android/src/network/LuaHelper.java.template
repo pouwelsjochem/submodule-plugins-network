@@ -17,8 +17,7 @@ public class LuaHelper
 	//
 	// build.sh substitutes the contents of the Lua helper file here
 	static private final String luaCode =
-
-		%LUA_HELPER_CODE%
+${luaCode}
 
 	static public Boolean loadLuaHelper( LuaState luaState )
 	{
