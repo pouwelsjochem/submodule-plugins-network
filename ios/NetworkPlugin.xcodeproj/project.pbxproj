@@ -55,7 +55,7 @@
 		A42BD53F1686C7B000DC652D /* AppleNetworkSupport.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppleNetworkSupport.mm; path = ../apple/AppleNetworkSupport.mm; sourceTree = "<group>"; usesTabs = 1; };
 		A42BD5401686C7B000DC652D /* NetworkLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkLibrary.h; path = ../apple/NetworkLibrary.h; sourceTree = "<group>"; };
 		A42BD5411686C7B000DC652D /* NetworkLibrary.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NetworkLibrary.mm; path = ../apple/NetworkLibrary.mm; sourceTree = "<group>"; usesTabs = 1; };
-		A4E253B6166D6FB300DCDC2C /* libnetwork.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetwork.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetworkPlugin.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4D49A7B16B6FAFD0009D268 /* AppleReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppleReachability.h; path = ../apple/AppleReachability.h; sourceTree = "<group>"; usesTabs = 1; };
 		C4D49A7C16B6FAFD0009D268 /* AppleReachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppleReachability.mm; path = ../apple/AppleReachability.mm; sourceTree = "<group>"; usesTabs = 1; };
 		C4D49A7D16B6FAFD0009D268 /* PlatformReachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlatformReachability.mm; path = ../apple/PlatformReachability.mm; sourceTree = "<group>"; usesTabs = 1; };
@@ -119,7 +119,7 @@
 		A484111A15114F700074BD57 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A4E253B6166D6FB300DCDC2C /* libnetwork.a */,
+				A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -136,9 +136,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A4E253B5166D6FB300DCDC2C /* network */ = {
+		A4E253B5166D6FB300DCDC2C /* NetworkPlugin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "network" */;
+			buildConfigurationList = A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "NetworkPlugin" */;
 			buildPhases = (
 				A4E253B2166D6FB300DCDC2C /* Sources */,
 				A4E253B3166D6FB300DCDC2C /* Frameworks */,
@@ -149,9 +149,9 @@
 			);
 			dependencies = (
 			);
-			name = network;
+			name = NetworkPlugin;
 			productName = plugin_library;
-			productReference = A4E253B6166D6FB300DCDC2C /* libnetwork.a */;
+			productReference = A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -175,7 +175,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A4E253B5166D6FB300DCDC2C /* network */,
+				A4E253B5166D6FB300DCDC2C /* NetworkPlugin */,
 			);
 		};
 /* End PBXProject section */
@@ -306,7 +306,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "network" */ = {
+		A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "NetworkPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A4E253C0166D6FB300DCDC2C /* Debug */,
