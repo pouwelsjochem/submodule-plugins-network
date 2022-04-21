@@ -46,7 +46,6 @@
 		A484118A15128D5D0074BD57 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A484117615128D5D0074BD57 /* SystemConfiguration.framework */; };
 		A48411CA15129F610074BD57 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A48411C915129F610074BD57 /* libsqlite3.dylib */; };
 		A4E2537F166AE3DC00DCDC2C /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4E2537E166AE3DC00DCDC2C /* Twitter.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		A4E253E5166DE7E000DCDC2C /* libnetwork.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A4E253E2166DE7C800DCDC2C /* libnetwork.a */; };
 		C4EE1F8C1677343500820DC7 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C4EE1F8B1677343500820DC7 /* Default-568h@2x.png */; };
 		C4EE1FD5167A666000820DC7 /* lib_jobrunner.lua in Resources */ = {isa = PBXBuildFile; fileRef = C4EE1FC7167A666000820DC7 /* lib_jobrunner.lua */; };
 		C4EE1FD6167A666000820DC7 /* paper_bkg.png in Resources */ = {isa = PBXBuildFile; fileRef = C4EE1FC8167A666000820DC7 /* paper_bkg.png */; };
@@ -60,23 +59,6 @@
 		C4EE1FDE167A666000820DC7 /* facebook.png in Resources */ = {isa = PBXBuildFile; fileRef = C4EE1FD3167A666000820DC7 /* facebook.png */; };
 		C4EE1FDF167A666000820DC7 /* facebook.png_ in Resources */ = {isa = PBXBuildFile; fileRef = C4EE1FD4167A666000820DC7 /* facebook.png_ */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		A4E253E1166DE7C800DCDC2C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A4E253DA166DE7C800DCDC2C /* Plugin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A4E253B6166D6FB300DCDC2C;
-			remoteInfo = plugin_library;
-		};
-		A4E253E3166DE7D800DCDC2C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A4E253DA166DE7C800DCDC2C /* Plugin.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = A4E253B5166D6FB300DCDC2C;
-			remoteInfo = plugin_library;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A4144668185FE739006F579E /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -122,7 +104,7 @@
 		A484117615128D5D0074BD57 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		A48411C915129F610074BD57 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		A4E2537E166AE3DC00DCDC2C /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
-		A4E253DA166DE7C800DCDC2C /* Plugin.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Plugin.xcodeproj; sourceTree = "<group>"; };
+		A4E253DA166DE7C800DCDC2C /* NetworkPlugin.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = NetworkPlugin.xcodeproj; sourceTree = "<group>"; };
 		C4EE1F8B1677343500820DC7 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		C4EE1F9F1677390700820DC7 /* AsyncHttp-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "AsyncHttp-Info.plist"; sourceTree = SOURCE_ROOT; };
 		C4EE1FC7167A666000820DC7 /* lib_jobrunner.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lib_jobrunner.lua; path = ../Corona/lib_jobrunner.lua; sourceTree = SOURCE_ROOT; };
@@ -175,7 +157,6 @@
 				A4E2537F166AE3DC00DCDC2C /* Twitter.framework in Frameworks */,
 				A484111E15114F700074BD57 /* UIKit.framework in Frameworks */,
 				A447B67C16675195009EA762 /* libplayer.a in Frameworks */,
-				A4E253E5166DE7E000DCDC2C /* libnetwork.a in Frameworks */,
 				A42BD55E1686C89900DC652D /* FacebookSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,7 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				C4EE1F8B1677343500820DC7 /* Default-568h@2x.png */,
-				A4E253DA166DE7C800DCDC2C /* Plugin.xcodeproj */,
+				A4E253DA166DE7C800DCDC2C /* NetworkPlugin.xcodeproj */,
 				A484112715114F700074BD57 /* App */,
 				A447B823166856C7009EA762 /* Corona */,
 				A447B66F16670015009EA762 /* CoronaEnterprise */,
@@ -300,14 +281,6 @@
 			path = CoronaSampleApp;
 			sourceTree = "<group>";
 		};
-		A4E253DB166DE7C800DCDC2C /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A4E253E2166DE7C800DCDC2C /* libnetwork.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		C4EE1FCA167A666000820DC7 /* Test */ = {
 			isa = PBXGroup;
 			children = (
@@ -356,7 +329,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A4E253E4166DE7D800DCDC2C /* PBXTargetDependency */,
 			);
 			name = AsyncHttp;
 			productName = CoronaSampleApp;
@@ -376,33 +348,18 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = A484110E15114F700074BD57;
 			productRefGroup = A484111A15114F700074BD57 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = A4E253DB166DE7C800DCDC2C /* Products */;
-					ProjectRef = A4E253DA166DE7C800DCDC2C /* Plugin.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				A484111815114F700074BD57 /* AsyncHttp */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		A4E253E2166DE7C800DCDC2C /* libnetwork.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libnetwork.a;
-			remoteRef = A4E253E1166DE7C800DCDC2C /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A484111715114F700074BD57 /* Resources */ = {
@@ -502,14 +459,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		A4E253E4166DE7D800DCDC2C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = plugin_library;
-			targetProxy = A4E253E3166DE7D800DCDC2C /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		A484112A15114F700074BD57 /* InfoPlist.strings */ = {

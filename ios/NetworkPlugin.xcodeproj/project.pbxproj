@@ -162,7 +162,7 @@
 			attributes = {
 				LastUpgradeCheck = 0420;
 			};
-			buildConfigurationList = A484111315114F700074BD57 /* Build configuration list for PBXProject "Plugin" */;
+			buildConfigurationList = A484111315114F700074BD57 /* Build configuration list for PBXProject "NetworkPlugin" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -291,7 +291,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A484111315114F700074BD57 /* Build configuration list for PBXProject "Plugin" */ = {
+		A484111315114F700074BD57 /* Build configuration list for PBXProject "NetworkPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A484114015114F700074BD57 /* Debug */,

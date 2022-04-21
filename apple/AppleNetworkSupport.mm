@@ -1046,7 +1046,15 @@ static int lua_RequestCanceller_comparator( lua_State* luaState )
 							lua_pop( luaState, 2 ); // Pop results
 							
 							NSString* strFilename = [NSString stringWithUTF8String:filename];
-							NSString* strPath = [NSString stringWithUTF8String:path];
+							NSString* strPath = nil;
+							if(path) {
+								strPath = [NSString stringWithUTF8String:path];
+							} else if([strFilename hasPrefix:@"file:///"]) {
+								NSURL *fileUrl = [NSURL URLWithString:strFilename];
+								strPath = [fileUrl path];
+								path = [strPath UTF8String];
+								strFilename = [strPath lastPathComponent];
+							}
 							
 							debug(@"body pathForFile from LUA: %s, isResourceFile: %s", path, isResourceFile ? "true" : "false");
 							
