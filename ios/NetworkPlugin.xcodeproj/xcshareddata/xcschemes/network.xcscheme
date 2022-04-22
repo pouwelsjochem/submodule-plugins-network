@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A4E253B5166D6FB300DCDC2C"
-               BuildableName = "libnetwork.a"
+               BuildableName = "libNetworkPlugin.a"
                BlueprintName = "NetworkPlugin"
                ReferencedContainer = "container:NetworkPlugin.xcodeproj">
             </BuildableReference>
@@ -51,7 +51,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A4E253B5166D6FB300DCDC2C"
-            BuildableName = "libnetwork.a"
+            BuildableName = "libNetworkPlugin.a"
             BlueprintName = "NetworkPlugin"
             ReferencedContainer = "container:NetworkPlugin.xcodeproj">
          </BuildableReference>
