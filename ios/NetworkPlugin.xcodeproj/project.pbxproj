@@ -31,7 +31,7 @@
 				"$TARGET_TEMP_DIR/$(INPUT_FILE_BASE).c",
 			);
 			runOncePerArchitecture = 0;
-			script = "CORONA_DIR=$SRCROOT/CoronaEnterprise/Corona\nCORONA_MAC_BIN_DIR=$CORONA_DIR/mac/bin\n\nif [ -e \"$CORONA_MAC_BIN_DIR/lua\" ]; then\n    LUA_DIR=$CORONA_MAC_BIN_DIR/lua\nelse\n    echo \"Could not find proper 32-bit lua build in: $CORONA_MAC_BIN_DIR/lua\"\n    exit 1\nfi\n\necho $CORONA_MAC_BIN_DIR/lua2c.sh $INPUT_FILE_PATH $TARGET_TEMP_DIR $CONFIGURATION\n\"$CORONA_MAC_BIN_DIR/lua2c.sh\" \"$INPUT_FILE_PATH\" \"$TARGET_TEMP_DIR\" \"$CONFIGURATION\" \"$CORONA_MAC_BIN_DIR\"\n";
+			script = "CORONA_DIR=$SRCROOT/CoronaEnterprise/Corona\nCORONA_MAC_BIN_DIR=$CORONA_DIR/mac/bin\nif [ ! -d \"$CORONA_MAC_BIN_DIR\" ] && [ -d \"$SRCROOT/../../../bin/mac/\" ]\nthen\n\tCORONA_MAC_BIN_DIR=$SRCROOT/../../../bin/mac\nfi\n\nif [ -e \"$CORONA_MAC_BIN_DIR/lua\" ]; then\n    LUA_DIR=$CORONA_MAC_BIN_DIR/lua\nelse\n    echo \"Could not find proper 32-bit lua build in: $CORONA_MAC_BIN_DIR/lua\"\n    exit 1\nfi\n\necho $CORONA_MAC_BIN_DIR/lua2c.sh $INPUT_FILE_PATH $TARGET_TEMP_DIR $CONFIGURATION\n\"$CORONA_MAC_BIN_DIR/lua2c.sh\" \"$INPUT_FILE_PATH\" \"$TARGET_TEMP_DIR\" \"$CONFIGURATION\" \"$CORONA_MAC_BIN_DIR\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -55,7 +55,7 @@
 		A42BD53F1686C7B000DC652D /* AppleNetworkSupport.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppleNetworkSupport.mm; path = ../apple/AppleNetworkSupport.mm; sourceTree = "<group>"; usesTabs = 1; };
 		A42BD5401686C7B000DC652D /* NetworkLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkLibrary.h; path = ../apple/NetworkLibrary.h; sourceTree = "<group>"; };
 		A42BD5411686C7B000DC652D /* NetworkLibrary.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NetworkLibrary.mm; path = ../apple/NetworkLibrary.mm; sourceTree = "<group>"; usesTabs = 1; };
-		A4E253B6166D6FB300DCDC2C /* libnetwork.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetwork.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetworkPlugin.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4D49A7B16B6FAFD0009D268 /* AppleReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppleReachability.h; path = ../apple/AppleReachability.h; sourceTree = "<group>"; usesTabs = 1; };
 		C4D49A7C16B6FAFD0009D268 /* AppleReachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppleReachability.mm; path = ../apple/AppleReachability.mm; sourceTree = "<group>"; usesTabs = 1; };
 		C4D49A7D16B6FAFD0009D268 /* PlatformReachability.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = PlatformReachability.mm; path = ../apple/PlatformReachability.mm; sourceTree = "<group>"; usesTabs = 1; };
@@ -119,7 +119,7 @@
 		A484111A15114F700074BD57 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A4E253B6166D6FB300DCDC2C /* libnetwork.a */,
+				A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -136,9 +136,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A4E253B5166D6FB300DCDC2C /* network */ = {
+		A4E253B5166D6FB300DCDC2C /* NetworkPlugin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "network" */;
+			buildConfigurationList = A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "NetworkPlugin" */;
 			buildPhases = (
 				A4E253B2166D6FB300DCDC2C /* Sources */,
 				A4E253B3166D6FB300DCDC2C /* Frameworks */,
@@ -149,9 +149,9 @@
 			);
 			dependencies = (
 			);
-			name = network;
+			name = NetworkPlugin;
 			productName = plugin_library;
-			productReference = A4E253B6166D6FB300DCDC2C /* libnetwork.a */;
+			productReference = A4E253B6166D6FB300DCDC2C /* libNetworkPlugin.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -162,7 +162,7 @@
 			attributes = {
 				LastUpgradeCheck = 0420;
 			};
-			buildConfigurationList = A484111315114F700074BD57 /* Build configuration list for PBXProject "Plugin" */;
+			buildConfigurationList = A484111315114F700074BD57 /* Build configuration list for PBXProject "NetworkPlugin" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -175,7 +175,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A4E253B5166D6FB300DCDC2C /* network */,
+				A4E253B5166D6FB300DCDC2C /* NetworkPlugin */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +223,9 @@
 					"${SRCROOT}/CoronaEnterprise/Corona/shared/include/Corona",
 					"${SRCROOT}/CoronaEnterprise/Corona/shared/include/lua",
 					"${SRCROOT}/CoronaEnterprise/Corona/ios/include/Corona",
+					"${SRCROOT}/../../../platform/iphone/Corona",
+					"${SRCROOT}/../../../librtt/Corona",
+					"${SRCROOT}/../../../external/lua-5.1.3/src",
 				);
 			};
 			name = Debug;
@@ -246,6 +249,9 @@
 					"${SRCROOT}/CoronaEnterprise/Corona/shared/include/Corona",
 					"${SRCROOT}/CoronaEnterprise/Corona/shared/include/lua",
 					"${SRCROOT}/CoronaEnterprise/Corona/ios/include/Corona",
+					"${SRCROOT}/../../../platform/iphone/Corona",
+					"${SRCROOT}/../../../librtt/Corona",
+					"${SRCROOT}/../../../external/lua-5.1.3/src",
 				);
 				VALIDATE_PRODUCT = YES;
 			};
@@ -256,7 +262,6 @@
 			buildSettings = {
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				DSTROOT = /tmp/network.dst;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -274,7 +279,6 @@
 			buildSettings = {
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				DSTROOT = /tmp/network.dst;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -291,7 +295,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A484111315114F700074BD57 /* Build configuration list for PBXProject "Plugin" */ = {
+		A484111315114F700074BD57 /* Build configuration list for PBXProject "NetworkPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A484114015114F700074BD57 /* Debug */,
@@ -300,7 +304,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "network" */ = {
+		A4E253BF166D6FB300DCDC2C /* Build configuration list for PBXNativeTarget "NetworkPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A4E253C0166D6FB300DCDC2C /* Debug */,
