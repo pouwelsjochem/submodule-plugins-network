@@ -503,7 +503,7 @@ static int lua_RequestCanceller_comparator( lua_State* luaState )
 	fName = @"networkRequest";
 	fPhase = @"began";
 	fStatus = -1;
-	fRequestURL = url;
+	fRequestURL = [url copy];
 	fResponseHeaders = nil;
 	fResponseType = @"text";
 	fResponse = nil;
