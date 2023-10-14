@@ -499,22 +499,22 @@ static int lua_RequestCanceller_comparator( lua_State* luaState )
 {
 	self = [super init];
 
-	fIsError = false;
-	fName = @"networkRequest";
-	fPhase = @"began";
-	fStatus = -1;
-	fRequestURL = [url copy];
-	fResponseHeaders = nil;
-	fResponseType = @"text";
-	fResponse = nil;
-	fBytesTransferred = 0;
-	fBytesEstimated = 0;
-	fDebugValues = nil;
+	self.fIsError = false;
+	self.fName = @"networkRequest";
+	self.fPhase = @"began";
+	self.fStatus = -1;
+	self.fRequestURL = url;
+	self.fResponseHeaders = nil;
+	self.fResponseType = @"text";
+	self.fResponse = nil;
+	self.fBytesTransferred = 0;
+	self.fBytesEstimated = 0;
+	self.fDebugValues = nil;
 	
 	if ( isDebug )
 	{
-		fDebugValues = [[NSMutableDictionary alloc] init];
-		[fDebugValues setValue: @"true" forKey: @"isDebug"];
+		self.fDebugValues = [[NSMutableDictionary alloc] init];
+		[self.fDebugValues setValue: @"true" forKey: @"isDebug"];
 	}
 	
 	return self;
