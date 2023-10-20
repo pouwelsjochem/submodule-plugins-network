@@ -103,12 +103,12 @@ typedef enum {
 @interface NetworkRequestState : NSObject
 
 @property (nonatomic)			Boolean             fIsError;
-@property (nonatomic, assign)	NSString*           fName;
-@property (nonatomic, assign)	NSString*           fPhase;
+@property (nonatomic, retain)	NSString*           fName;
+@property (nonatomic, retain)	NSString*           fPhase;
 @property (nonatomic)			NSInteger           fStatus;
-@property (nonatomic, assign)	NSString*           fRequestURL;
+@property (nonatomic, retain)	NSString*           fRequestURL;
 @property (nonatomic, retain)	NSDictionary*       fResponseHeaders;
-@property (nonatomic, assign)	NSString*           fResponseType;
+@property (nonatomic, retain)	NSString*           fResponseType;
 @property (nonatomic, retain)	NSObject*           fResponse;	// NSString, NSData, or CoronaFileSpec
 @property (nonatomic, retain)   NSRequestCanceller* fRequestCanceller;
 @property (nonatomic)			long long           fBytesTransferred;
