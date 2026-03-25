@@ -11,7 +11,6 @@
 #define __WinTimer_H__
 
 #include <windows.h>
-#include <map>
 
 // ----------------------------------------------------------------------------
 
@@ -34,15 +33,16 @@ class WinTimer
 		static int CompareTicks(DWORD x, DWORD y);
 
 	private:
+		static bool RegisterWindowClass();
+		bool CreateMessageWindow();
+		void DestroyMessageWindow();
+		static LRESULT CALLBACK MessageWindowProc(HWND windowHandle, UINT messageId, WPARAM wParam, LPARAM lParam);
+
+	private:
+		HWND		fWindowHandle;
 		UINT_PTR	fTimer;
 		DWORD		fIntervalInMilliseconds;
 		DWORD		fNextIntervalTimeInTicks;
-
-		// Map allowing us to delegate scheduled tasks to object instances
-		static std::map<UINT_PTR, WinTimer*> fTimerMap;
-
-		// Static timer proc, used to call object instances
-		static void CALLBACK OnTimerElapsed(HWND aHwnd, UINT aMessage, UINT_PTR aTimerId, DWORD aTime); 
 };
 
 // ----------------------------------------------------------------------------

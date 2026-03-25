@@ -11,27 +11,16 @@
 
 #include "WindowsNetworkSupport.h"
 
-// Initialized static map...
-std::map<UINT_PTR, WinTimer*> WinTimer::fTimerMap;
-
-// ----------------------------------------------------------------------------
-
-// Called by Windows when the system timer has elapsed.
-// Calls WinTimer's Evaluate() function to see if it is time to invoke its callback.
-//
-VOID CALLBACK WinTimer::OnTimerElapsed(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+namespace
 {
-	WinTimer *timer = fTimerMap[idEvent];
-    if (!timer)
-        return; // FAIL!
-
-	timer->Evaluate();
+	static const wchar_t kWinTimerWindowClassName[] = L"Solar2DNetworkWinTimerWindow";
 }
 
 WinTimer::WinTimer( ) 
 {
 	debug("WinTimer::WinTimer - thread ID: %d", GetCurrentThreadId());
 
+	fWindowHandle = NULL;
 	fIntervalInMilliseconds = 10;
 	fNextIntervalTimeInTicks = 0;
 	fTimer = NULL;
@@ -40,6 +29,100 @@ WinTimer::WinTimer( )
 WinTimer::~WinTimer()
 {
 	Stop();
+}
+
+bool WinTimer::RegisterWindowClass()
+{
+	WNDCLASSW windowClass;
+	memset(&windowClass, 0, sizeof(windowClass));
+	windowClass.lpfnWndProc = WinTimer::MessageWindowProc;
+	windowClass.lpszClassName = kWinTimerWindowClassName;
+
+	HMODULE moduleHandle = NULL;
+	if (!::GetModuleHandleExW(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			reinterpret_cast<LPCWSTR>(&WinTimer::MessageWindowProc), &moduleHandle))
+	{
+		moduleHandle = ::GetModuleHandleW(NULL);
+	}
+	windowClass.hInstance = (HINSTANCE)moduleHandle;
+
+	ATOM classAtom = ::RegisterClassW(&windowClass);
+	if ((0 != classAtom) || (ERROR_CLASS_ALREADY_EXISTS == ::GetLastError()))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool WinTimer::CreateMessageWindow()
+{
+	if (fWindowHandle)
+	{
+		return true;
+	}
+
+	if (!RegisterWindowClass())
+	{
+		return false;
+	}
+
+	HMODULE moduleHandle = NULL;
+	if (!::GetModuleHandleExW(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			reinterpret_cast<LPCWSTR>(&WinTimer::MessageWindowProc), &moduleHandle))
+	{
+		moduleHandle = ::GetModuleHandleW(NULL);
+	}
+
+	fWindowHandle = ::CreateWindowExW(
+		0,
+		kWinTimerWindowClassName,
+		L"",
+		0,
+		0, 0, 0, 0,
+		HWND_MESSAGE,
+		NULL,
+		(HINSTANCE)moduleHandle,
+		this);
+
+	return (NULL != fWindowHandle);
+}
+
+void WinTimer::DestroyMessageWindow()
+{
+	if (fWindowHandle)
+	{
+		::DestroyWindow(fWindowHandle);
+		fWindowHandle = NULL;
+	}
+}
+
+LRESULT CALLBACK WinTimer::MessageWindowProc(HWND windowHandle, UINT messageId, WPARAM wParam, LPARAM lParam)
+{
+	if (WM_NCCREATE == messageId)
+	{
+		CREATESTRUCTW *createStruct = (CREATESTRUCTW*)lParam;
+		::SetWindowLongPtrW(windowHandle, GWLP_USERDATA, (LONG_PTR)createStruct->lpCreateParams);
+		return TRUE;
+	}
+
+	WinTimer *timer = (WinTimer*)::GetWindowLongPtrW(windowHandle, GWLP_USERDATA);
+	if (timer)
+	{
+		if ((WM_TIMER == messageId) && (wParam == timer->fTimer))
+		{
+			timer->Evaluate();
+			return 0;
+		}
+
+		if (WM_NCDESTROY == messageId)
+		{
+			::SetWindowLongPtrW(windowHandle, GWLP_USERDATA, 0);
+		}
+	}
+
+	return ::DefWindowProcW(windowHandle, messageId, wParam, lParam);
 }
 
 // Starts the timer.
@@ -52,12 +135,20 @@ WinTimer::Start()
 		return;
 	}
 
+	if (!CreateMessageWindow())
+	{
+		return;
+	}
+
 	// Start the timer, but with an interval faster than the configured interval.
 	// We do this because Windows timers can invoke later than expected.
 	// To compensate, we'll schedule when to invoke the timer's callback using "fIntervalEndTimeInTicks".
 	fNextIntervalTimeInTicks = ::GetTickCount() + fIntervalInMilliseconds;
-	fTimer = ::SetTimer(NULL, 0, 10, OnTimerElapsed);
-    fTimerMap[fTimer] = this;
+	fTimer = ::SetTimer(fWindowHandle, 1, 10, NULL);
+	if (0 == fTimer)
+	{
+		DestroyMessageWindow();
+	}
 }
 
 // Stops the timer.
@@ -72,14 +163,12 @@ WinTimer::Stop()
 
 	// Stop the timer.
 	if (fTimer != 0)
-    {
-        ::KillTimer(NULL, fTimer);
- 
-        if (fTimerMap.size() > 0)
-            fTimerMap[fTimer] = NULL;
- 
-        fTimer = 0;
-    }
+	{
+		::KillTimer(fWindowHandle, fTimer);
+		fTimer = 0;
+	}
+
+	DestroyMessageWindow();
 }
 
 // Sets the timer's interval in milliseconds. This can be applied while the timer is running.
@@ -175,4 +264,3 @@ WinTimer::CompareTicks(DWORD x, DWORD y)
 }
 
 // ----------------------------------------------------------------------------
-
