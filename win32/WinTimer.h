@@ -36,11 +36,16 @@ class WinTimer
 		static bool RegisterWindowClass();
 		bool CreateMessageWindow();
 		void DestroyMessageWindow();
+		static DWORD WINAPI TimerThreadProc(LPVOID context);
+		void RunTimerThread();
 		static LRESULT CALLBACK MessageWindowProc(HWND windowHandle, UINT messageId, WPARAM wParam, LPARAM lParam);
 
 	private:
 		HWND		fWindowHandle;
-		UINT_PTR	fTimer;
+		HANDLE		fThreadHandle;
+		HANDLE		fStopEvent;
+		volatile LONG fIsRunning;
+		volatile LONG fTickPending;
 		DWORD		fIntervalInMilliseconds;
 		DWORD		fNextIntervalTimeInTicks;
 };
