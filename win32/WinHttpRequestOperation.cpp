@@ -14,6 +14,46 @@
 #include "CharsetTranscoder.h"
 #include <Shlobj.h>
 
+namespace
+{
+	bool IsRunningUnderWine()
+	{
+		static int sIsRunningUnderWine = -1;
+		if (sIsRunningUnderWine < 0)
+		{
+			sIsRunningUnderWine = 0;
+
+			HMODULE moduleHandle = ::GetModuleHandleW(L"ntdll.dll");
+			if (moduleHandle != NULL)
+			{
+				sIsRunningUnderWine = (::GetProcAddress(moduleHandle, "wine_get_version") != NULL) ? 1 : 0;
+			}
+		}
+
+		return (sIsRunningUnderWine != 0);
+	}
+
+	DWORD GetPreferredSecureProtocolFlags()
+	{
+		DWORD protocolFlags = 0;
+
+#ifdef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1
+		protocolFlags |= WINHTTP_FLAG_SECURE_PROTOCOL_TLS1;
+#endif
+#ifdef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_1
+		protocolFlags |= WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_1;
+#endif
+#ifdef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2
+		protocolFlags |= WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;
+#endif
+#ifdef WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_3
+		protocolFlags |= WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_3;
+#endif
+
+		return protocolFlags;
+	}
+}
+
 
 #pragma region Constructors and Destructors
 /// Creates a new HTTP request operation object.
@@ -111,9 +151,12 @@ bool WinHttpRequestOperation::Execute()
 	// This session handle gets re-used on every call to Execute(). It is closed by the destructor.
 	if (0 == fAsyncSession.SessionHandle)
 	{
+		// Proton/Wine's WinHTTP proxy discovery is unreliable on Steam Deck.
+		// Prefer a direct connection there, while preserving native Windows proxy behavior.
+		DWORD accessType = IsRunningUnderWine() ? WINHTTP_ACCESS_TYPE_NO_PROXY : WINHTTP_ACCESS_TYPE_DEFAULT_PROXY;
 		fAsyncSession.SessionHandle = ::WinHttpOpen(
 			NULL, 
-			WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+			accessType,
 			WINHTTP_NO_PROXY_NAME,
 			WINHTTP_NO_PROXY_BYPASS, 
 			WINHTTP_FLAG_ASYNC
@@ -126,6 +169,19 @@ bool WinHttpRequestOperation::Execute()
 				WINHTTP_CALLBACK_FLAG_ALL_NOTIFICATIONS, 
 				NULL
 				);
+
+			DWORD secureProtocolFlags = GetPreferredSecureProtocolFlags();
+			if (secureProtocolFlags != 0)
+			{
+				if (!::WinHttpSetOption(
+						fAsyncSession.SessionHandle,
+						WINHTTP_OPTION_SECURE_PROTOCOLS,
+						&secureProtocolFlags,
+						sizeof(secureProtocolFlags)))
+				{
+					debug("Failed to set WinHttp secure protocols (%u)", ::GetLastError());
+				}
+			}
 		}
 	}
 	if (0 == fAsyncSession.SessionHandle)
@@ -866,6 +922,14 @@ WinHttpRequestError WinHttpRequestOperation::GetRequestErrorFromWinHttpError(DWO
 		case ERROR_WINHTTP_CONNECTION_ERROR:
 			debug("WinHttp error ERROR_WINHTTP_CONNECTION_ERROR");
 			return kWinHttpRequestErrorConnectionFailure;
+		case ERROR_WINHTTP_SECURE_FAILURE:
+			debug("WinHttp error ERROR_WINHTTP_SECURE_FAILURE");
+			return kWinHttpRequestErrorCertificateRequired;
+#ifdef ERROR_WINHTTP_SECURE_CHANNEL_ERROR
+		case ERROR_WINHTTP_SECURE_CHANNEL_ERROR:
+			debug("WinHttp error ERROR_WINHTTP_SECURE_CHANNEL_ERROR");
+			return kWinHttpRequestErrorCertificateRequired;
+#endif
 		case ERROR_WINHTTP_CLIENT_AUTH_CERT_NEEDED:
 			debug("WinHttp error ERROR_WINHTTP_CLIENT_AUTH_CERT_NEEDED");
 			return kWinHttpRequestErrorCertificateRequired;
@@ -1313,7 +1377,15 @@ void WinHttpRequestOperation::OnAsyncWinHttpStatusChanged(
 
 		case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
 			debug("WINHTTP_CALLBACK_STATUS_REQUEST_ERROR");
-			asyncSessionPointer->ErrorResult = GetRequestErrorFromWinHttpError(::GetLastError());
+			{
+				DWORD errorValue = ::GetLastError();
+				if ((lpvStatusInformation != NULL) && (dwStatusInformationLength >= sizeof(WINHTTP_ASYNC_RESULT)))
+				{
+					WINHTTP_ASYNC_RESULT* asyncResultPointer = (WINHTTP_ASYNC_RESULT*)lpvStatusInformation;
+					errorValue = asyncResultPointer->dwError;
+				}
+				asyncSessionPointer->ErrorResult = GetRequestErrorFromWinHttpError(errorValue);
+			}
 			asyncSessionPointer->HasAsyncOperationEnded = true;
 			break;
 

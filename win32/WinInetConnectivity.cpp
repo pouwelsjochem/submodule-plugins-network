@@ -12,13 +12,33 @@
 
 #include "wininet.h"
 
+namespace
+{
+	bool IsRunningUnderWine()
+	{
+		HMODULE moduleHandle = ::GetModuleHandleW(L"ntdll.dll");
+		if (moduleHandle == NULL)
+		{
+			return false;
+		}
+
+		return (::GetProcAddress(moduleHandle, "wine_get_version") != NULL);
+	}
+}
+
 DWORD WinInetConnectivity::getConnectedState()
 {
 	DWORD connectionFlags = 0;
 	BOOL isConnected = InternetGetConnectedState( &connectionFlags, 0 );
 
+	if (!isConnected && (connectionFlags == 0) && IsRunningUnderWine())
+	{
+		// Wine/Proton can fail to report connectivity here even when sockets work.
+		connectionFlags = INET_CONNECTION_LAN;
+		isConnected = TRUE;
+	}
+
 	debug("InternetGetConnectedState - isConnected: %s, dwFlags: %u", isConnected ? "true" : "false", connectionFlags);
 
 	return connectionFlags;
 }
-
