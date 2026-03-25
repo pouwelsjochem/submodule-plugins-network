@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 // This file is part of the Corona game engine.
-// For overview and more information on licensing please refer to README.md 
+// For overview and more information on licensing please refer to README.md
 // Home page: https://github.com/coronalabs/corona
 // Contact: support@coronalabs.com
 //
@@ -11,30 +11,23 @@
 
 #include "WindowsNetworkSupport.h"
 
-// Initialized static map...
-std::map<UINT_PTR, WinTimer*> WinTimer::fTimerMap;
-
-// ----------------------------------------------------------------------------
-
-// Called by Windows when the system timer has elapsed.
-// Calls WinTimer's Evaluate() function to see if it is time to invoke its callback.
-//
-VOID CALLBACK WinTimer::OnTimerElapsed(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+namespace
 {
-	WinTimer *timer = fTimerMap[idEvent];
-    if (!timer)
-        return; // FAIL!
-
-	timer->Evaluate();
+	static const wchar_t kWinTimerWindowClassName[] = L"Solar2DNetworkWinTimerWindow";
+	static const UINT kWinTimerMessageId = WM_APP + 0x31;
 }
 
-WinTimer::WinTimer( ) 
+WinTimer::WinTimer()
 {
 	debug("WinTimer::WinTimer - thread ID: %d", GetCurrentThreadId());
 
+	fWindowHandle = NULL;
+	fThreadHandle = NULL;
+	fStopEvent = NULL;
+	fIsRunning = 0;
+	fTickPending = 0;
 	fIntervalInMilliseconds = 10;
 	fNextIntervalTimeInTicks = 0;
-	fTimer = NULL;
 }
 
 WinTimer::~WinTimer()
@@ -42,125 +35,229 @@ WinTimer::~WinTimer()
 	Stop();
 }
 
-// Starts the timer.
-void
-WinTimer::Start()
+bool WinTimer::RegisterWindowClass()
 {
-	// Do not continue if the timer is already running.
+	WNDCLASSW windowClass;
+	memset(&windowClass, 0, sizeof(windowClass));
+	windowClass.lpfnWndProc = WinTimer::MessageWindowProc;
+	windowClass.lpszClassName = kWinTimerWindowClassName;
+
+	HMODULE moduleHandle = NULL;
+	if (!::GetModuleHandleExW(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			reinterpret_cast<LPCWSTR>(&WinTimer::MessageWindowProc), &moduleHandle))
+	{
+		moduleHandle = ::GetModuleHandleW(NULL);
+	}
+	windowClass.hInstance = (HINSTANCE)moduleHandle;
+
+	ATOM classAtom = ::RegisterClassW(&windowClass);
+	return ((0 != classAtom) || (ERROR_CLASS_ALREADY_EXISTS == ::GetLastError()));
+}
+
+bool WinTimer::CreateMessageWindow()
+{
+	if (fWindowHandle)
+	{
+		return true;
+	}
+
+	if (!RegisterWindowClass())
+	{
+		return false;
+	}
+
+	HMODULE moduleHandle = NULL;
+	if (!::GetModuleHandleExW(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			reinterpret_cast<LPCWSTR>(&WinTimer::MessageWindowProc), &moduleHandle))
+	{
+		moduleHandle = ::GetModuleHandleW(NULL);
+	}
+
+	fWindowHandle = ::CreateWindowExW(
+		0,
+		kWinTimerWindowClassName,
+		L"",
+		0,
+		0, 0, 0, 0,
+		HWND_MESSAGE,
+		NULL,
+		(HINSTANCE)moduleHandle,
+		this);
+
+	return (NULL != fWindowHandle);
+}
+
+void WinTimer::DestroyMessageWindow()
+{
+	if (fWindowHandle)
+	{
+		::DestroyWindow(fWindowHandle);
+		fWindowHandle = NULL;
+	}
+}
+
+DWORD WINAPI WinTimer::TimerThreadProc(LPVOID context)
+{
+	WinTimer *timer = (WinTimer*)context;
+	timer->RunTimerThread();
+	return 0;
+}
+
+void WinTimer::RunTimerThread()
+{
+	while (InterlockedCompareExchange(&fIsRunning, 0, 0) != 0)
+	{
+		if (fStopEvent && (WAIT_OBJECT_0 == ::WaitForSingleObject(fStopEvent, 10)))
+		{
+			break;
+		}
+
+		if (NULL == fWindowHandle)
+		{
+			continue;
+		}
+
+		if (0 == InterlockedCompareExchange(&fTickPending, 1, 0))
+		{
+			if (!::PostMessageW(fWindowHandle, kWinTimerMessageId, 0, 0))
+			{
+				InterlockedExchange(&fTickPending, 0);
+			}
+		}
+	}
+}
+
+LRESULT CALLBACK WinTimer::MessageWindowProc(HWND windowHandle, UINT messageId, WPARAM wParam, LPARAM lParam)
+{
+	if (WM_NCCREATE == messageId)
+	{
+		CREATESTRUCTW *createStruct = (CREATESTRUCTW*)lParam;
+		::SetWindowLongPtrW(windowHandle, GWLP_USERDATA, (LONG_PTR)createStruct->lpCreateParams);
+		return TRUE;
+	}
+
+	WinTimer *timer = (WinTimer*)::GetWindowLongPtrW(windowHandle, GWLP_USERDATA);
+	if (timer)
+	{
+		if (kWinTimerMessageId == messageId)
+		{
+			timer->Evaluate();
+			return 0;
+		}
+
+		if (WM_NCDESTROY == messageId)
+		{
+			::SetWindowLongPtrW(windowHandle, GWLP_USERDATA, 0);
+		}
+	}
+
+	return ::DefWindowProcW(windowHandle, messageId, wParam, lParam);
+}
+
+void WinTimer::Start()
+{
 	if (IsRunning())
 	{
 		return;
 	}
 
-	// Start the timer, but with an interval faster than the configured interval.
-	// We do this because Windows timers can invoke later than expected.
-	// To compensate, we'll schedule when to invoke the timer's callback using "fIntervalEndTimeInTicks".
-	fNextIntervalTimeInTicks = ::GetTickCount() + fIntervalInMilliseconds;
-	fTimer = ::SetTimer(NULL, 0, 10, OnTimerElapsed);
-    fTimerMap[fTimer] = this;
-}
-
-// Stops the timer.
-void
-WinTimer::Stop()
-{
-	// Do not continue if the timer has already been stopped.
-	if (IsRunning() == false)
+	if (!CreateMessageWindow())
 	{
 		return;
 	}
 
-	// Stop the timer.
-	if (fTimer != 0)
-    {
-        ::KillTimer(NULL, fTimer);
- 
-        if (fTimerMap.size() > 0)
-            fTimerMap[fTimer] = NULL;
- 
-        fTimer = 0;
-    }
+	InterlockedExchange(&fTickPending, 0);
+	InterlockedExchange(&fIsRunning, 1);
+	fNextIntervalTimeInTicks = ::GetTickCount() + fIntervalInMilliseconds;
+
+	fStopEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+	if (NULL == fStopEvent)
+	{
+		InterlockedExchange(&fIsRunning, 0);
+		DestroyMessageWindow();
+		return;
+	}
+
+	fThreadHandle = ::CreateThread(NULL, 0, WinTimer::TimerThreadProc, this, 0, NULL);
+	if (NULL == fThreadHandle)
+	{
+		InterlockedExchange(&fIsRunning, 0);
+		::CloseHandle(fStopEvent);
+		fStopEvent = NULL;
+		DestroyMessageWindow();
+	}
 }
 
-// Sets the timer's interval in milliseconds. This can be applied while the timer is running.
-// The interval cannot be set less than 10 milliseconds.
-void
-WinTimer::SetInterval( DWORD milliseconds )
+void WinTimer::Stop()
+{
+	if (!IsRunning())
+	{
+		return;
+	}
+
+	InterlockedExchange(&fIsRunning, 0);
+	InterlockedExchange(&fTickPending, 0);
+
+	if (fStopEvent)
+	{
+		::SetEvent(fStopEvent);
+	}
+
+	if (fThreadHandle)
+	{
+		::WaitForSingleObject(fThreadHandle, INFINITE);
+		::CloseHandle(fThreadHandle);
+		fThreadHandle = NULL;
+	}
+
+	if (fStopEvent)
+	{
+		::CloseHandle(fStopEvent);
+		fStopEvent = NULL;
+	}
+
+	DestroyMessageWindow();
+}
+
+void WinTimer::SetInterval(DWORD milliseconds)
 {
 	fIntervalInMilliseconds = milliseconds;
 }
 
-// Returns true if the timer is currently running.
-bool
-WinTimer::IsRunning() const
+bool WinTimer::IsRunning() const
 {
-	return fTimer != NULL;
+	return (InterlockedCompareExchange(const_cast<LONG*>(&fIsRunning), 0, 0) != 0);
 }
 
-// Checks if the running timer's interval has elapsed, and if it has, invokes its callback.
-// This function is provided because a Windows system timer can trigger late.
-// This function will not do anything if the timer is not running.
-void
-WinTimer::Evaluate()
+void WinTimer::Evaluate()
 {
-	// Do not continue if the if we haven't reached the scheduled time yet.
-	if (CompareTicks(::GetTickCount(), fNextIntervalTimeInTicks) < 0)
+	if (!IsRunning())
 	{
+		InterlockedExchange(&fTickPending, 0);
 		return;
 	}
 
-	// Schedule the next interval time.
+	if (CompareTicks(::GetTickCount(), fNextIntervalTimeInTicks) < 0)
+	{
+		InterlockedExchange(&fTickPending, 0);
+		return;
+	}
+
 	for (; CompareTicks(::GetTickCount(), fNextIntervalTimeInTicks) > 0; fNextIntervalTimeInTicks += fIntervalInMilliseconds);
 
-	// Invoke this timer's callback.
 	OnTimer();
+	InterlockedExchange(&fTickPending, 0);
 }
 
-
-// Computes the delta in milliseconds between two times in milliseconds as returned by
-// ::GetTickCount() and represented as DWORD values.  The delta will be negative if x is
-// before y, or positive if x is after y.
-//
-// This logic allows for the time values to wrap, such that you may increment or decrement 
-// any such time value, wrapping in either direction, or you may pass in a ::GetTickCount()
-// value that has wrapped, and this logic will accommodate that, so long as the time interval
-// between x and y is not greater than 2^30 milliseconds (about 12.5 days).
-// 
-long
-WinTimer::GetTickDelta(DWORD x, DWORD y)
+long WinTimer::GetTickDelta(DWORD x, DWORD y)
 {
-	// Inspired by http://stackoverflow.com/questions/727918/what-happens-when-gettickcount-wraps
-	//
-	// Test vectors used:
-	//
-	// x = 13487231,   y = 13492843,   delta = -5612
-	// x = 13492843,   y = 13487231,   delta =  5612
-	// x = 4294967173, y = 1111,       delta = -1234
-	// x = 1111,       y = 4294967173, delta =  1234
-	// x = 0x7fffffff, y = 0x80000000, delta =    -1
-	// x = 0x80000000, y = 0x7fffffff, delta =     1
-	// x = 0x80000000, y = 0x80000001, delta =    -1
-	// x = 0x80000001, y = 0x80000000, delta =     1
-	// x = 0x7fffffff, y = 0x80000001, delta =    -2
-	// x = 0xffffffff, y = 0x00000001, delta =    -2
-	// x = 0x00000000, y = 0xffffffff, delta =     1
-	//
-
-	// Compare the given tick values via subtraction (relies on specified behavior of DWORD 
-	// and long wrapping, including wrapping on subraction).
-	//
 	long deltaTime = (long)x - (long)y;
 	return deltaTime;
 }
 
-// Compares the given tick values returned by ::GetTickCount() using GetTickDelta() (above).
-//
-// Returns a positive value if "x" is greater than "y".
-// Returns zero if "x" is equal to "y".
-// Returns a negative value if "x" is less than "y".
-//
-int
-WinTimer::CompareTicks(DWORD x, DWORD y)
+int WinTimer::CompareTicks(DWORD x, DWORD y)
 {
 	long deltaTime = WinTimer::GetTickDelta(x, y);
 	if (deltaTime < 0)
@@ -173,6 +270,4 @@ WinTimer::CompareTicks(DWORD x, DWORD y)
 	}
 	return 1;
 }
-
-// ----------------------------------------------------------------------------
 
