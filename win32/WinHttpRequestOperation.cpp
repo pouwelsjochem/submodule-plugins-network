@@ -61,7 +61,6 @@ WinHttpRequestOperation::WinHttpRequestOperation()
 {
 	fDownloadFileStream = NULL;
 	fIsExecuting = false;
-	fRequestStartTimeInTicks = 0;
 	fAsyncSession.Reset();
 }
 
@@ -106,7 +105,6 @@ bool WinHttpRequestOperation::Execute()
 
 	// Initialize variables for a new HTTP request.
 	fIsExecuting = true;
-	fRequestStartTimeInTicks = ::GetTickCount();
 
 	// Get method...
 	const WCHAR* wideMethod = getWCHARs(fRequestParams->getRequestMethod());
@@ -230,18 +228,6 @@ bool WinHttpRequestOperation::Execute()
 		fAsyncSession.ErrorResult = GetRequestErrorFromWinHttpError(::GetLastError());
 		fAsyncSession.HasAsyncOperationEnded = true;
 		return false;
-	}
-
-	// Wine/Proton 8 changed enough of WinHTTP's async delivery that relying solely on
-	// session-level callback inheritance is not robust. Bind the callback directly to the
-	// request handle as well so request notifications always target our state object.
-	if (WINHTTP_INVALID_STATUS_CALLBACK == ::WinHttpSetStatusCallback(
-			fAsyncSession.RequestHandle,
-			WinHttpRequestOperation::OnAsyncWinHttpStatusChanged,
-			WINHTTP_CALLBACK_FLAG_ALL_NOTIFICATIONS,
-			NULL))
-	{
-		debug("Failed to set WinHttp request callback (%u)", ::GetLastError());
 	}
 
 	if (! fRequestParams->getHandleRedirects())
@@ -401,35 +387,6 @@ void WinHttpRequestOperation::ProcessExecution()
 	}
 
 	LuaCallback* luaCallback = fRequestParams->getLuaCallback();
-
-	if (!fAsyncSession.HasAsyncOperationEnded)
-	{
-		DWORD timeoutInMilliseconds = (DWORD)(fRequestParams->getTimeout() * 1000);
-		if (timeoutInMilliseconds > 0)
-		{
-			long elapsedTimeInMilliseconds = (long)::GetTickCount() - (long)fRequestStartTimeInTicks;
-			if (elapsedTimeInMilliseconds >= (long)timeoutInMilliseconds)
-			{
-				debug("Forcing request timeout after %ld ms without a final WinHttp notification", elapsedTimeInMilliseconds);
-				fAsyncSession.ErrorResult = kWinHttpRequestErrorTimedOut;
-				fAsyncSession.HasAsyncOperationEnded = true;
-
-				HINTERNET requestHandle = fAsyncSession.RequestHandle;
-				fAsyncSession.RequestHandle = 0;
-				if (requestHandle)
-				{
-					::WinHttpCloseHandle(requestHandle);
-				}
-
-				HINTERNET connectionHandle = fAsyncSession.ConnectionHandle;
-				fAsyncSession.ConnectionHandle = 0;
-				if (connectionHandle)
-				{
-					::WinHttpCloseHandle(connectionHandle);
-				}
-			}
-		}
-	}
 
 	if (fAsyncSession.IsFirstProcessingPassForRequest)
 	{

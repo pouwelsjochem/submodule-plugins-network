@@ -14,7 +14,6 @@
 namespace
 {
 	static const wchar_t kWinTimerWindowClassName[] = L"Solar2DNetworkWinTimerWindow";
-	static const UINT kWinTimerMessageId = WM_APP + 0x31;
 }
 
 WinTimer::WinTimer( ) 
@@ -22,12 +21,9 @@ WinTimer::WinTimer( )
 	debug("WinTimer::WinTimer - thread ID: %d", GetCurrentThreadId());
 
 	fWindowHandle = NULL;
-	fThreadHandle = NULL;
-	fStopEvent = NULL;
-	fIsRunning = 0;
-	fTickPending = 0;
 	fIntervalInMilliseconds = 10;
 	fNextIntervalTimeInTicks = 0;
+	fTimer = NULL;
 }
 
 WinTimer::~WinTimer()
@@ -102,37 +98,6 @@ void WinTimer::DestroyMessageWindow()
 	}
 }
 
-DWORD WINAPI WinTimer::TimerThreadProc(LPVOID context)
-{
-	WinTimer *timer = (WinTimer*)context;
-	timer->RunTimerThread();
-	return 0;
-}
-
-void WinTimer::RunTimerThread()
-{
-	while (InterlockedCompareExchange(&fIsRunning, 0, 0) != 0)
-	{
-		if (fStopEvent && (WAIT_OBJECT_0 == ::WaitForSingleObject(fStopEvent, 10)))
-		{
-			break;
-		}
-
-		if (NULL == fWindowHandle)
-		{
-			continue;
-		}
-
-		if (0 == InterlockedCompareExchange(&fTickPending, 1, 0))
-		{
-			if (!::PostMessageW(fWindowHandle, kWinTimerMessageId, 0, 0))
-			{
-				InterlockedExchange(&fTickPending, 0);
-			}
-		}
-	}
-}
-
 LRESULT CALLBACK WinTimer::MessageWindowProc(HWND windowHandle, UINT messageId, WPARAM wParam, LPARAM lParam)
 {
 	if (WM_NCCREATE == messageId)
@@ -145,7 +110,7 @@ LRESULT CALLBACK WinTimer::MessageWindowProc(HWND windowHandle, UINT messageId, 
 	WinTimer *timer = (WinTimer*)::GetWindowLongPtrW(windowHandle, GWLP_USERDATA);
 	if (timer)
 	{
-		if (kWinTimerMessageId == messageId)
+		if ((WM_TIMER == messageId) && (wParam == timer->fTimer))
 		{
 			timer->Evaluate();
 			return 0;
@@ -175,28 +140,13 @@ WinTimer::Start()
 		return;
 	}
 
-	InterlockedExchange(&fTickPending, 0);
-	InterlockedExchange(&fIsRunning, 1);
-
 	// Start the timer, but with an interval faster than the configured interval.
 	// We do this because Windows timers can invoke later than expected.
 	// To compensate, we'll schedule when to invoke the timer's callback using "fIntervalEndTimeInTicks".
 	fNextIntervalTimeInTicks = ::GetTickCount() + fIntervalInMilliseconds;
-
-	fStopEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
-	if (NULL == fStopEvent)
+	fTimer = ::SetTimer(fWindowHandle, 1, 10, NULL);
+	if (0 == fTimer)
 	{
-		InterlockedExchange(&fIsRunning, 0);
-		DestroyMessageWindow();
-		return;
-	}
-
-	fThreadHandle = ::CreateThread(NULL, 0, WinTimer::TimerThreadProc, this, 0, NULL);
-	if (NULL == fThreadHandle)
-	{
-		InterlockedExchange(&fIsRunning, 0);
-		::CloseHandle(fStopEvent);
-		fStopEvent = NULL;
 		DestroyMessageWindow();
 	}
 }
@@ -211,25 +161,11 @@ WinTimer::Stop()
 		return;
 	}
 
-	InterlockedExchange(&fIsRunning, 0);
-	InterlockedExchange(&fTickPending, 0);
-
-	if (fStopEvent)
+	// Stop the timer.
+	if (fTimer != 0)
 	{
-		::SetEvent(fStopEvent);
-	}
-
-	if (fThreadHandle)
-	{
-		::WaitForSingleObject(fThreadHandle, INFINITE);
-		::CloseHandle(fThreadHandle);
-		fThreadHandle = NULL;
-	}
-
-	if (fStopEvent)
-	{
-		::CloseHandle(fStopEvent);
-		fStopEvent = NULL;
+		::KillTimer(fWindowHandle, fTimer);
+		fTimer = 0;
 	}
 
 	DestroyMessageWindow();
@@ -247,7 +183,7 @@ WinTimer::SetInterval( DWORD milliseconds )
 bool
 WinTimer::IsRunning() const
 {
-	return (InterlockedCompareExchange(const_cast<LONG*>(&fIsRunning), 0, 0) != 0);
+	return fTimer != NULL;
 }
 
 // Checks if the running timer's interval has elapsed, and if it has, invokes its callback.
@@ -259,7 +195,6 @@ WinTimer::Evaluate()
 	// Do not continue if the if we haven't reached the scheduled time yet.
 	if (CompareTicks(::GetTickCount(), fNextIntervalTimeInTicks) < 0)
 	{
-		InterlockedExchange(&fTickPending, 0);
 		return;
 	}
 
@@ -268,7 +203,6 @@ WinTimer::Evaluate()
 
 	// Invoke this timer's callback.
 	OnTimer();
-	InterlockedExchange(&fTickPending, 0);
 }
 
 

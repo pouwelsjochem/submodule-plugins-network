@@ -48,7 +48,6 @@ private:
 
 	/// Set true if this object is in the middle of an HTTP request operation.
 	bool fIsExecuting;
-	DWORD fRequestStartTimeInTicks;
 
 	bool Execute();
 	void ProcessExecutionUntil(int timeoutInMilliseconds);
