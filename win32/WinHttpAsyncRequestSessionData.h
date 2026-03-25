@@ -16,8 +16,8 @@
 
 #include "WindowsNetworkSupport.h"
 
-#define SESSION_TX_BUFFER_SIZE 262144
-#define SESSION_RX_BUFFER_SIZE 262144 // Orignal 8192 was recommended by Microsoft's WinHttp documentation, has 4.4Mbps download speed at maximum.
+#define SESSION_TX_BUFFER_SIZE 65536
+#define SESSION_RX_BUFFER_SIZE 65536 // Original 8192 was recommended by Microsoft's WinHttp documentation, has 4.4Mbps download speed at maximum.
 
 /// Stores information needed by a threaded HTTP request.
 /// Provides fields to be monitored by the main thread to control the async operation.
